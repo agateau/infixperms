@@ -1,0 +1,8 @@
+# What is it?
+
+infixperms is a small daemon which uses inotify to monitor files in one or more
+directories and set their permissions to 0664 for files and 0775 for dirs.
+
+# Author
+Aurélien Gâteau
+http://github.com/agateau/infixperms

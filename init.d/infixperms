@@ -1,0 +1,25 @@
+#! /bin/sh
+
+NAME=infixperms
+DAEMON=/path/to/infixperms
+ARGS="/dir1 /dir2"
+LOGFILE=/var/log/$NAME.log
+PIDFILE=/var/run/$NAME.pid
+
+case "$1" in
+start)
+    start-stop-daemon --start --oknodo --pidfile $PIDFILE --startas $DAEMON \
+        -- --daemon --pidfile $PIDFILE --logfile $LOGFILE $ARGS
+    ;;
+stop)
+    start-stop-daemon --stop --oknodo --pidfile $PIDFILE
+    ;;
+restart|reload|force-reload)
+    $0 stop
+    $0 start
+    ;;
+*)
+    echo "Usage: $NAME [start|stop|restart]" >&2
+    exit 3
+;;
+esac
