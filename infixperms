@@ -28,12 +28,15 @@ def adjust_perms(path, dir):
         os.chmod(path, expected)
 
 class EventHandler(pyinotify.ProcessEvent):
+    @daemonutils.exception_catcher
     def process_IN_CREATE(self, event):
         adjust_perms(event.pathname, event.dir)
 
+    @daemonutils.exception_catcher
     def process_IN_ATTRIB(self, event):
         adjust_perms(event.pathname, event.dir)
 
+@daemonutils.exception_catcher
 def create_watches(dirs):
     wm = pyinotify.WatchManager()
     mask = pyinotify.IN_ATTRIB | pyinotify.IN_CREATE

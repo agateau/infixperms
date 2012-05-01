@@ -6,6 +6,17 @@ License: GPLv3+
 import logging
 import os
 import sys
+import traceback
+
+def exception_catcher(fcn):
+    def new_fcn(*args, **kwargs):
+        try:
+            return fcn(*args, **kwargs)
+        except:
+            msg = traceback.format_exc()
+            logging.error(msg)
+    return new_fcn
+
 
 def double_fork():
     # Python unix daemon trick from the Activestate recipe 66012
