@@ -15,6 +15,8 @@ from optparse import OptionParser
 
 import pyinotify
 
+import daemonutils
+
 def adjust_perms(path, dir):
     perms = os.stat(path).st_mode & 0777
     if dir:
@@ -42,33 +44,6 @@ def create_watches(dirs):
         wdd = wm.add_watch(dir, mask, rec=True, auto_add=True)
 
 USAGE = "%prog [options] <dir1> [<dir2>...]"
-
-def double_fork():
-    # Python unix daemon trick from the Activestate recipe 66012
-    try:
-        pid = os.fork()
-        if pid > 0:
-            # exit first parent
-            sys.exit(0)
-    except OSError, e:
-        logging.error("fork #1 failed: %d (%s)", e.errno, e.strerror)
-        sys.exit(1)
-
-    # decouple from parent environment
-    os.chdir("/")   #don't prevent unmounting
-    os.setsid()
-    os.umask(0)
-
-    # do second fork
-    try:
-        pid = os.fork()
-        if pid > 0:
-            # exit from second parent
-            sys.stdout.flush()
-            sys.exit(0)
-    except OSError, e:
-        logging.error("fork #2 failed: %d (%s)", e.errno, e.strerror)
-        sys.exit(1)
 
 def main():
     parser = OptionParser(usage=USAGE)
@@ -105,7 +80,7 @@ def main():
 
 
     if options.daemon:
-        double_fork()
+        daemonutils.double_fork()
 
     if pid_file:
         pid_file.write(str(os.getpid()))
