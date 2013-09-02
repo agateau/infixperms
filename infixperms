@@ -17,7 +17,13 @@ import pyinotify
 
 import daemonutils
 
+BLACKLIST = [".unison.tmp"]
+
 def adjust_perms(path, dir):
+    for bl in BLACKLIST:
+        if bl in path:
+            logging.info("Skipping %s, blacklisted", path)
+            return
     perms = os.stat(path).st_mode & 0777
     if dir:
         expected = 0775
