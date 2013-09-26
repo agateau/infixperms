@@ -17,13 +17,10 @@ import pyinotify
 
 import daemonutils
 
-BLACKLIST = [".unison.tmp"]
-
 def adjust_perms(path, dir):
-    for bl in BLACKLIST:
-        if bl in path:
-            logging.info("Skipping %s, blacklisted", path)
-            return
+    if not os.path.exists(path):
+        logging.info("Skipping %s, disappeared", path)
+        return
     perms = os.stat(path).st_mode & 0777
     if dir:
         expected = 0775
@@ -42,10 +39,14 @@ class EventHandler(pyinotify.ProcessEvent):
     def process_IN_ATTRIB(self, event):
         adjust_perms(event.pathname, event.dir)
 
+    @daemonutils.exception_catcher
+    def process_IN_MOVED_TO(self, event):
+        adjust_perms(event.pathname, event.dir)
+
 @daemonutils.exception_catcher
 def create_watches(dirs):
     wm = pyinotify.WatchManager()
-    mask = pyinotify.IN_ATTRIB | pyinotify.IN_CREATE
+    mask = pyinotify.IN_ATTRIB | pyinotify.IN_CREATE | pyinotify.IN_MOVED_TO
 
     notifier = pyinotify.AsyncNotifier(wm, EventHandler())
     for dir in dirs:
